@@ -10,6 +10,7 @@
 
 #define CASE_INSENSITIVE 1
 #define EXCLUDE 1
+#define COUNT_ONLY 1
 
 #define ASTERISK 0x2A
 #define CR 0x0D
@@ -25,6 +26,7 @@ char filename[256];
 char expression[256];
 int caseInsensitive = 0;
 int exclude = 0;
+int countOnly = 0;
 
 int findrc = 0;
 struct _finddata_t findit;
@@ -62,6 +64,10 @@ void main(int argc, char *argv[])
 			else if (!(memcmp(argv[index], "-x", 2)))
 			{
 				exclude = EXCLUDE;
+			}
+			else if (!(memcmp(argv[index], "-c", 2)))
+			{
+				countOnly = COUNT_ONLY;
 			}
 			else
 			{
@@ -140,14 +146,14 @@ void processFile()
 			if (result == FOUND)
 			{
 				count++;
-				if (!exclude)
+				if (!exclude && !countOnly)
 				{
 					printf("%s\n", stringBuffer);
 				}
 			}
 			else
 			{
-				if (exclude)
+				if (exclude && !countOnly)
 				{
 					printf("%s\n", stringBuffer);
 				}
@@ -157,6 +163,10 @@ void processFile()
 		if (count == 0)
 		{
 			printf("No occurrences found.");
+		}
+		else if (countOnly)
+		{
+			printf("Found the string %d times.", count);
 		}
 		printf("\n================================================================================================\n");
 	}
