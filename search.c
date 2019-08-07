@@ -21,6 +21,7 @@
 
 char searchString[MAX_SIZE];
 char stringBuffer[MAX_SIZE];
+char compareString[MAX_SIZE];
 
 char filename[256];
 char expression[256];
@@ -41,6 +42,8 @@ void processFile();
 int countThisInThat(char thisChar, char *thatString);
 
 void printUsage();
+
+void toUpperCase(char *inString);
 
 void main(int argc, char *argv[])
 {
@@ -139,23 +142,32 @@ void processFile()
 		int index = 1;
 		int count = 0;
 		int result;
+		if (caseInsensitive)
+		{
+			toUpperCase(searchString);
+		}
 		while (!feof(fptr))
 		{
 			fgets(stringBuffer, MAX_SIZE, fptr);
-			result = findThisInThat(searchString, stringBuffer);
+			strcpy_s(compareString, MAX_SIZE, stringBuffer);
+			if (caseInsensitive)
+			{
+				toUpperCase(compareString);
+			}
+			result = findThisInThat(searchString, compareString);
 			if (result == FOUND)
 			{
 				count++;
 				if (!exclude && !countOnly)
 				{
-					printf("%s\n", stringBuffer);
+					printf("%s", stringBuffer);
 				}
 			}
 			else
 			{
 				if (exclude && !countOnly)
 				{
-					printf("%s\n", stringBuffer);
+					printf("%s", stringBuffer);
 				}
 			}
 			index++;
@@ -203,4 +215,16 @@ void printUsage()
 	printf("\tWhere -i is case insensitivity;\n");
 	printf("\t      -x is all not containing <string>;\n");
 	printf("\t      -c prints the number of occurences.\n");
+}
+
+void toUpperCase(char *inString)
+{
+	int strLen = strlen(inString);
+	for (int index = 0; index < strLen; ++index)
+	{
+		if (inString[index] >= 'a' && inString[index] <= 'z')
+		{
+			inString[index] -= 0x20;
+		}
+	}
 }
