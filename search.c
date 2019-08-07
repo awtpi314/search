@@ -8,8 +8,8 @@
 
 #define MAX_SIZE 1024 * 2
 
-#define ONE_FILE 0
-#define MANY_FILES 1
+#define CASE_INSENSITIVE 1
+#define EXCLUDE 1
 
 #define ASTERISK 0x2A
 #define CR 0x0D
@@ -23,7 +23,8 @@ char stringBuffer[MAX_SIZE];
 
 char filename[256];
 char expression[256];
-int option;
+int caseInsensitive = 0;
+int exclude = 0;
 
 int findrc = 0;
 struct _finddata_t findit;
@@ -37,19 +38,38 @@ void processFile();
 
 int countThisInThat(char thisChar, char *thatString);
 
+void printUsage();
+
 void main(int argc, char *argv[])
 {
+	int errors = 0;
+
 	if (argc < 3)
 	{
-		printf("\n");
-		printf("Use: search <filename> <string>");
-		printf("\n");
+		printUsage();
 		exit(1);
 	}
-	else
+	else if (argc >= 3)
 	{
 		strcpy_s(searchString, MAX_SIZE, argv[2]);
 		strcpy_s(expression, 256, argv[1]);
+		for (int index = 3; index < argc; ++index)
+		{
+			if (!(memcmp(argv[index], "-i", 2)))
+			{
+				caseInsensitive = CASE_INSENSITIVE;
+			}
+			else if (!(memcmp(argv[index], "-x", 2)))
+			{
+				exclude = EXCLUDE;
+			}
+			else
+			{
+				printf("Error: Incorrect arguments.\n");
+				printUsage();
+				exit(1);
+			}
+		}
 		/* OLD VERSION USING SEPERATE CASE FOR NON-WILDCARD FILE SEARCH PATHS
 		if (countThisInThat(WILDCARD, expression) == 0)
 		{
@@ -103,7 +123,7 @@ void processFile()
 	fopen_s(&fptr, filename, "r");
 	if (fptr == NULL)
 	{
-		printf("Error opening %s\n", filename);
+		perror("Error");
 		exit(1);
 	}
 	else
@@ -111,17 +131,30 @@ void processFile()
 		printf("\n================================================================================================\n");
 		printf("Searching file %s...\n", filename);
 		int index = 1;
-		int numberFound = 0;
+		int count = 0;
+		int result;
 		while (!feof(fptr))
 		{
 			fgets(stringBuffer, MAX_SIZE, fptr);
-			if (findThisInThat(searchString, stringBuffer) == FOUND)
+			result = findThisInThat(searchString, stringBuffer);
+			if (result == FOUND)
 			{
-				numberFound++;
+				count++;
+				if (!exclude)
+				{
+					printf("%s\n", stringBuffer);
+				}
+			}
+			else
+			{
+				if (exclude)
+				{
+					printf("%s\n", stringBuffer);
+				}
 			}
 			index++;
 		}
-		if (numberFound == 0)
+		if (count == 0)
 		{
 			printf("No occurrences found.");
 		}
@@ -145,11 +178,19 @@ int findThisInThat(char *thisString, char *thatString)
 		{
 			if (!(memcmp(&thatString[index], thisString, thisStringLen)))
 			{
-				// printf("Found on line %d:\n", index);
-				printf("%s\n", stringBuffer);
 				return FOUND;
 			}
 		}
 	}
 	return MISSING;
+}
+
+void printUsage()
+{
+	printf("\n");
+	printf("Use: search <filename> <string> [-x] [-c]\n");
+	printf("\n");
+	printf("\tWhere -i is case insensitivity;\n");
+	printf("\t      -x is all not containing <string>;\n");
+	printf("\t      -c prints the number of occurences.\n");
 }
