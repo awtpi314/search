@@ -51,11 +51,11 @@ void main(int argc, char *argv[])
 		}
 		else
 		{
-			int findrc;
-			struct _finddata_t findit;
-			long findhandle;
+			// int findrc;
+			// struct _finddata_t findit;
+			// long findhandle;
 
-			
+			printf("Wildcard function is not available at this time.");
 		}
 	}
 }
