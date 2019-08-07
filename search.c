@@ -108,7 +108,8 @@ void processFile()
 	}
 	else
 	{
-		printf("\nSearching file %s...\n", filename);
+		printf("\n================================================================================================\n");
+		printf("Searching file %s...\n", filename);
 		int index = 1;
 		int numberFound = 0;
 		while (!feof(fptr))
@@ -124,6 +125,7 @@ void processFile()
 		{
 			printf("No occurrences found.");
 		}
+		printf("\n================================================================================================\n");
 	}
 }
 
