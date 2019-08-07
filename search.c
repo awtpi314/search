@@ -25,6 +25,12 @@ char filename[256];
 char expression[256];
 int option;
 
+int findrc = 0;
+struct _finddata_t findit;
+long findhandle;
+
+int fileCount = 0;
+
 int findThisInThat(char *thisString, char *thatString);
 
 void processFile();
@@ -44,6 +50,7 @@ void main(int argc, char *argv[])
 	{
 		strcpy_s(searchString, MAX_SIZE, argv[2]);
 		strcpy_s(expression, 256, argv[1]);
+		/* OLD VERSION USING SEPERATE CASE FOR NON-WILDCARD FILE SEARCH PATHS
 		if (countThisInThat(WILDCARD, expression) == 0)
 		{
 			strcpy_s(filename, 256, argv[1]);
@@ -51,12 +58,27 @@ void main(int argc, char *argv[])
 		}
 		else
 		{
-			// int findrc;
-			// struct _finddata_t findit;
-			// long findhandle;
-
-			printf("Wildcard function is not available at this time.");
+		   END OLD VERSION */
+		findhandle = _findfirst(expression, &findit);
+		if (findhandle > 0)
+		{
+			fileCount++;
+			strcpy_s(filename, 256, findit.name);
+			processFile();
+			while (findrc == 0)
+			{
+				findrc = _findnext(findhandle, &findit);
+				if (findrc != 0)
+					break;
+				fileCount++;
+				strcpy_s(filename, 256, findit.name);
+				processFile();
+			}
+			findrc = _findclose(findhandle);
 		}
+		else
+			printf("No files found matching \"%s\"\n", expression);
+		// } OLD VERSION USING SEPERATE CASE FOR NON-WILDCARD FILE SEARCH PATHS
 	}
 }
 
@@ -86,7 +108,7 @@ void processFile()
 	}
 	else
 	{
-		printf("Searching file %s\n", filename);
+		printf("\nSearching file %s...\n", filename);
 		int index = 1;
 		int numberFound = 0;
 		while (!feof(fptr))
